@@ -12,11 +12,17 @@ Uso em notebook:
 """
 
 import os
-from dataclasses import asdict
+import sys
+from pathlib import Path
 from typing import Dict, Tuple
 
 import numpy as np
 from PIL import Image
+
+# Ensure project root is on sys.path when running from notebooks/ in Kaggle.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from utils.medgemma_report import ScreeningResults, generate_clinical_report
 
