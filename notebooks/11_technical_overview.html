@@ -1,0 +1,372 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Veredictos Vision - arXiv Style Manuscript</title>
+<style>
+  @page { size: A4; margin: 14mm 12mm 16mm 12mm; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    color: #000000;
+    font-family: "Times New Roman", Times, serif;
+    line-height: 1.26;
+  }
+  .paper {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 12px 18px 18px;
+  }
+  .header-note {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    color: #111;
+    text-align: right;
+    margin-bottom: 2px;
+  }
+  .title {
+    text-align: center;
+    font-size: 29px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 4px 0 6px;
+  }
+  .authors {
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .affiliation {
+    text-align: center;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .abstract {
+    border: 1px solid #000;
+    padding: 8px 10px;
+    font-size: 12px;
+    margin-bottom: 9px;
+  }
+  .abstract b { font-size: 12px; }
+  .keywords {
+    font-size: 11px;
+    margin: 0 0 9px;
+  }
+  .twocol {
+    column-count: 2;
+    column-gap: 18px;
+    column-fill: balance;
+  }
+  h2 {
+    font-size: 15px;
+    margin: 9px 0 4px;
+    line-height: 1.2;
+    break-inside: avoid;
+  }
+  h3 {
+    font-size: 13px;
+    margin: 8px 0 3px;
+    line-height: 1.2;
+    break-inside: avoid;
+  }
+  p {
+    margin: 0 0 6px;
+    font-size: 12px;
+    text-align: justify;
+    orphans: 2;
+    widows: 2;
+  }
+  ul, ol {
+    margin: 0 0 6px 16px;
+    padding: 0;
+    font-size: 12px;
+  }
+  li {
+    margin: 0 0 3px;
+    text-align: left;
+  }
+  .equation {
+    text-align: center;
+    font-size: 12px;
+    margin: 4px 0 7px;
+    break-inside: avoid;
+  }
+  .eqno {
+    float: right;
+    font-size: 11px;
+    margin-right: 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 5px 0 8px;
+    font-size: 11px;
+    break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #000;
+    padding: 3px 4px;
+    vertical-align: top;
+    text-align: left;
+  }
+  th { font-weight: 700; }
+  .figure {
+    break-inside: avoid;
+    margin: 5px 0 8px;
+  }
+  .figure img {
+    width: 100%;
+    border: 1px solid #000;
+    display: block;
+  }
+  .caption {
+    font-size: 10.5px;
+    margin-top: 2px;
+    text-align: justify;
+  }
+  .small {
+    font-size: 10px;
+  }
+  .refs {
+    font-size: 11px;
+  }
+  .refs li {
+    margin-bottom: 3px;
+    text-align: left;
+  }
+  .mono {
+    font-family: Consolas, Menlo, monospace;
+    font-size: 10px;
+  }
+  .foot {
+    border-top: 1px solid #000;
+    margin-top: 10px;
+    padding-top: 4px;
+    font-size: 10px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  @media print {
+    .paper { max-width: none; padding: 0; }
+  }
+</style>
+</head>
+<body>
+  <article class="paper">
+    <div class="header-note">Submitted to MedGemma Impact Challenge, 2026</div>
+    <div class="title">Veredictos Vision: A Multi-Pathology Retinal Screening Pipeline with Agent57-Style Decomposition under Free-Tier Compute</div>
+    <div class="authors">Pedro Afonso M.F. e Gabriel Maia</div>
+    <div class="affiliation">Independent Research Team | Kaggle-Based Reproducible ML System</div>
+
+    <div class="abstract"><b>Abstract.</b> We present Veredictos Vision, a resource-constrained retinal screening system that jointly estimates diabetic retinopathy severity, glaucoma-related structural risk, and vessel-derived biomarkers from color fundus images, followed by controlled clinical report generation through MedGemma. The system uses task-specialized branches, deterministic fusion, and strict runtime diagnostics to stabilize deployment in notebook environments. Final branch outcomes reached diabetic retinopathy quadratic weighted kappa (QWK) = 0.979, cup Dice = 0.868, and vessel score = 0.717, while maintaining reproducibility contracts for checkpoints and artifacts. We report executed ablations for branch fusion and language-policy robustness, analyze failure modes including accelerator instability and instruction-echo generation, and provide a deployment-oriented methodology suitable for low-resource teams. The results indicate that careful systems engineering can close part of the gap between benchmark performance and operational medical-AI demonstration.
+    </div>
+
+    <p class="keywords"><b>Keywords:</b> retinal AI, diabetic retinopathy, glaucoma screening, vessel segmentation, MedGemma, low-resource machine learning, reproducibility, clinical report generation.</p>
+
+    <section class="twocol">
+      <h2>1. Introduction</h2>
+      <p>Retinal screening is a natural candidate for computer vision because fundus images encode multiple pathologies in a single acquisition. However, many published systems remain endpoint-specific: one architecture, one target, one benchmark. Real triage in ophthalmology requires concurrent interpretation of several interacting signals. A patient may exhibit mild diabetic retinopathy with high cup-to-disc ratio, or severe diabetic changes with vessel rarefaction; these combinations influence urgency in ways that single-task systems cannot represent directly.</p>
+      <p>In this work we design Veredictos Vision as an integrated system rather than a monolithic model. The design follows a decomposition principle analogous to Agent57-like control strategies: decompose heterogeneous subproblems, optimize each with target-aligned objectives, then coordinate through a strict integration contract. The goal is not to maximize one leaderboard number, but to maximize reliability of the full decision surface under practical constraints.</p>
+      <p>Our constraints are explicit: free-tier compute, unstable long-running notebook sessions, gated language model access, and mixed accelerator behavior (GPU/TPU/CPU transitions). Under these conditions, systems often fail for engineering reasons before any scientific evaluation is complete. We therefore make runtime robustness a first-class scientific variable, not an implementation afterthought.</p>
+      <p>The paper contributions are fourfold: first, a multi-pathology architecture with explicit branch outputs; second, reproducible training and packaging under low cost; third, controlled MedGemma report generation with traceable failure handling; and fourth, executed ablation experiments for both branch coverage and language policy. We provide both performance and operational evidence.</p>
+      <h2>2. Related Work</h2>
+      <p>Automated diabetic retinopathy (DR) analysis has progressed from binary referable-DR systems to ordinal multiclass staging and population-level screening pipelines. Early high-impact clinical validations showed that deep models can reach specialist-level performance under curated protocols, while later studies expanded to multiethnic cohorts and primary-care settings. Critically, this literature established that DR deployment quality depends not only on AUC/accuracy, but also on calibration, referral thresholds, and operational safeguards.</p>
+      <p>Parallel work in glaucoma from fundus images evolved from handcrafted cup-disc descriptors to deep segmentation and classification frameworks. Challenge datasets such as REFUGE standardized comparison for optic disc/cup analysis, while subsequent methods emphasized structural robustness under morphological variability and low contrast boundaries. Our glaucoma branch is aligned with this stream by treating CDR as an explicit derived signal rather than latent class output.</p>
+      <p>Retinal vessel segmentation is a mature area with classical and deep-learning methods, yet it remains highly relevant because vessel morphology adds complementary disease context. UNet-family architectures and their variants (including UNet++) became dominant due to favorable performance under moderate data regimes. We adopt this family to preserve thin-vessel topology while maintaining runtime feasibility in constrained hardware conditions.</p>
+      <p>At the architecture level, transformer-based medical vision models (including TransUNet-style hybrids) improved representation of global context with local detail preservation. For retinal tasks where both subtle lesions and structural geometry matter, hybrid CNN-transformer designs are particularly attractive. Our system uses this design philosophy asymmetrically across branches instead of forcing a single shared backbone.</p>
+      <p>Compared with prior single-task studies, integrated multi-pathology systems remain less common in open, reproducible, low-cost settings. Many published pipelines rely on proprietary data or enterprise infrastructure, limiting practical replication for small teams. Veredictos Vision addresses this gap by combining three explicit pathology branches under a deterministic artifact contract and transparent runtime diagnostics.</p>
+      <p>Finally, language-model integration in medical imaging is increasingly explored for report support, but free-form generation can introduce hallucination, prompt leakage, or inconsistency with numeric outputs. In this work MedGemma is constrained to branch-derived signals and surrounded by validation/sanitization logic. This positions the language layer as a controlled communication module rather than a diagnostic authority.</p>
+      <h2>3. Problem Setup</h2>
+      <p>Given a fundus image x, the system predicts structured tuple z and clinical text r:</p>
+      <div class="equation">z = (CDR, g<sub>risk</sub>, DR<sub>grade</sub>, DR<sub>conf</sub>, V<sub>density</sub>) <span class="eqno">(1)</span></div>
+      <div class="equation">r = G(z; \theta<sub>LM</sub>, \pi<sub>safe</sub>) <span class="eqno">(2)</span></div>
+      <p>where G is language generation under safety policy \pi<sub>safe</sub>. The optimization objective combines branch-specific accuracy and operational validity:</p>
+      <div class="equation">max \; J = \lambda<sub>1</sub>QWK + \lambda<sub>2</sub>Dice<sub>cup</sub> + \lambda<sub>3</sub>S<sub>vessel</sub> - \lambda<sub>4</sub>E<sub>invalid-text</sub> - \lambda<sub>5</sub>E<sub>runtime</sub> <span class="eqno">(3)</span></div>
+      <p>This objective reflects our central thesis: deployment-quality systems require minimizing operational errors together with maximizing metric quality.</p>
+
+      <h2>4. System Architecture</h2>
+      <h3>4.1 Glaucoma structural branch</h3>
+      <p>A TransUNet-style segmentation head estimates cup and disc masks, from which CDR is derived by geometric post-processing. Risk bins (low, moderate, high, emergent) are assigned through deterministic thresholds and stored in diagnostics before downstream use.</p>
+
+      <h3>4.2 Diabetic retinopathy branch</h3>
+      <p>An EfficientNet-B3 classifier predicts 5-grade DR labels with confidence scores. Because DR grades are ordinal, model selection prioritizes QWK rather than raw accuracy. This decision was empirically important for preserving class-order behavior near grade transitions.</p>
+
+      <h3>4.3 Vessel branch</h3>
+      <p>A UNet-family vessel segmentation model predicts retinal vascular masks. Vessel density is computed as foreground ratio under a valid-retina region. Although scalar, this feature contributes complementary information in triage narratives and branch-fusion consistency checks.</p>
+
+      <h3>4.4 Fusion contract</h3>
+      <p>Fusion is deterministic and explicit. Every inference call writes z-values into output metadata and UI diagnostics. The language module receives only these values and does not access hidden model states or raw logits. This design limits mismatch between numbers and prose.</p>
+      <p>Architecturally, the system is intentionally asymmetric: each branch has its own inductive bias, optimization surface, and failure profile. This reduces negative transfer that commonly appears when one shared backbone must simultaneously optimize lesion-level grading, geometric segmentation, and vessel topology. We observed that branch specialization improved stability of both convergence and qualitative outputs, especially under limited compute budgets and restart-prone sessions.</p>
+      <p>The integration layer uses typed payloads and strict serialization rules so that every prediction can be traced from checkpoint to report. This decision made debugging materially faster: if a report appears inconsistent, we can immediately inspect the stored tuple and isolate whether the issue came from vision inference, fusion logic, or language generation. In deployment-like settings, this traceability is as important as raw benchmark metrics.</p>
+
+      <div class="figure">
+        <img src="figures/fig_capability_matrix.svg" alt="Capability coverage matrix"/>
+        <div class="caption"><b>Figure 1.</b> Capability coverage across the full stack. S indicates strong support and P indicates partial support. The matrix summarizes perception branches, integration controls, and report-safety mechanisms.</div>
+      </div>
+
+      <h2>5. Data and Preprocessing</h2>
+      <p>DR training combines APTOS and Messidor-2 after schema harmonization, with class-distribution tracking and leakage checks. Segmentation tasks use branch-specific datasets and resize pipelines chosen to preserve anatomical structures and fine vessels. Input normalization is consistent across branches to reduce distribution drift at fusion time.</p>
+      <p>Data-split validation includes overlap checks between train and validation image identifiers. Any overlap is treated as a hard failure condition. This policy was repeatedly enforced in training/evaluation scripts and documented in run logs.</p>
+
+      <h2>6. Training Protocol</h2>
+      <h3>6.1 Optimization settings</h3>
+      <p>Training uses mixed precision where stable, checkpointing by branch-specific primary endpoints, and class-weighting for DR imbalance. Each branch is selected independently to avoid global checkpoint choices that hide branch regressions.</p>
+      <h3>6.2 Compute profile</h3>
+      <p>Experiments run on free Kaggle sessions, primarily dual T4 for training and single T4/TPU variants for inference stress tests. No paid cloud compute was used. This constraint shaped engineering decisions such as deterministic checkpoint contracts and explicit restart procedures after accelerator faults.</p>
+
+      <h2>7. Quantitative Results</h2>
+      <table>
+        <thead><tr><th>Task</th><th>Metric</th><th>Result</th><th>Target</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>DR grading</td><td>Quadratic weighted kappa</td><td><b>0.979</b></td><td>&ge; 0.90</td><td>Pass</td></tr>
+          <tr><td>DR grading</td><td>Accuracy</td><td>0.962</td><td>&ge; 0.85</td><td>Pass</td></tr>
+          <tr><td>Glaucoma branch</td><td>Cup Dice</td><td><b>0.868</b></td><td>Study endpoint</td><td>Reported</td></tr>
+          <tr><td>Vessel branch</td><td>Vessel score</td><td><b>0.717</b></td><td>Study endpoint</td><td>Reported</td></tr>
+        </tbody>
+      </table>
+      <p>Results show strong branch-level performance under low-resource compute. More importantly, outputs remained reproducible across reruns once startup checks and environment policies were stabilized.</p>
+
+      <div class="figure">
+        <img src="figures/fig_task_performance.svg" alt="Task performance plot"/>
+        <div class="caption"><b>Figure 2.</b> Aggregate branch performance for the final checkpoints exported in the submission package.</div>
+      </div>
+
+      <div class="figure">
+        <img src="figures/fig_dr_class_metrics.svg" alt="DR class metrics"/>
+        <div class="caption"><b>Figure 3.</b> DR class-wise precision, recall, and F1. Grade-1 remains the most challenging boundary class, consistent with subtle early-lesion transitions.</div>
+      </div>
+
+      <div class="figure">
+        <img src="figures/fig_support_distribution.svg" alt="Class support"/>
+        <div class="caption"><b>Figure 4.</b> Validation class support to contextualize per-class interpretation and avoid majority-class over-claims.</div>
+      </div>
+      <p>Beyond headline performance, error distribution analysis showed that most residual DR mistakes are near ordinal boundaries and not catastrophic jumps. In other words, the model rarely confuses no-DR with proliferative DR; it more often confuses adjacent grades, which is expected in subtle early disease. This behavior is clinically preferable to unstructured confusion and aligns with the high QWK value.</p>
+      <p>For segmentation branches, quantitative scores were corroborated with visual plausibility checks on representative masks to avoid metric-only overfitting. Cup and vessel outputs retained anatomical coherence across diverse image quality conditions. These checks were included because segmentation metrics alone may hide morphologically implausible predictions that still score well on aggregate overlaps.</p>
+      <p>Importantly, all reported metrics were obtained under the same reproducibility contract used for packaging: fixed paths, explicit checkpoint loading, and deterministic export. This prevents a common reproducibility gap where manuscript numbers cannot be matched by final runnable artifacts.</p>
+
+      <h2>8. Language Layer Evaluation</h2>
+      <p>MedGemma generation was tested in strict and loose policies. Strict template enforcement reduced format drift but frequently rejected clinically useful outputs. Loose generation improved completion but required sanitization to remove prompt leakage and instruction echoes. We therefore implemented controlled post-processing plus diagnostics.</p>
+      <p>A representative invalid output class was instruction echo, where the model copied prompt directives instead of producing report text. Another class involved empty text despite successful model invocation. Both are operationally critical in live demos.</p>
+
+      <table>
+        <thead><tr><th>Policy</th><th>Generation behavior</th><th>Failure mode</th><th>Operational decision</th></tr></thead>
+        <tbody>
+          <tr><td>Strict template only</td><td>Low drift when valid</td><td>High invalid/rejection rate</td><td>Not primary</td></tr>
+          <tr><td>Strict + retries</td><td>Improved validity</td><td>Still brittle under session noise</td><td>Backup</td></tr>
+          <tr><td>Loose + sanitization</td><td>High completion</td><td>Needs filter layer</td><td><b>Primary mode</b></td></tr>
+          <tr><td>Forced raw output</td><td>Maximum throughput</td><td>Prompt leakage risk</td><td>Debug only</td></tr>
+        </tbody>
+      </table>
+
+      <h2>9. Executed Ablations</h2>
+      <h3>9.1 Branch ablation</h3>
+      <p>We removed each branch from fusion to evaluate narrative and triage degradation. Full fusion consistently yielded the most coherent risk statements. No-vessel runs reduced vascular context in recommendations. No-glaucoma runs weakened structural-risk specificity. No-DR runs were clinically insufficient for diabetic triage.</p>
+      <h3>9.2 Fusion consistency checks</h3>
+      <p>Consistency was measured by verifying that report risk levels and recommendations aligned with numeric z. In full mode, contradiction frequency was lowest. Contradictions rose in sparse-signal modes and in strict-generation configurations with aggressive coercion.</p>
+
+      <h2>10. Failure Taxonomy and Mitigation</h2>
+      <p>We identify four high-impact failure classes:</p>
+      <ul>
+        <li><b>F1: Access failures.</b> Gated model access (HF authorization/token) leading to hard initialization errors.</li>
+        <li><b>F2: Memory failures.</b> TPU HBM resource exhaustion and CUDA OOM under long sessions.</li>
+        <li><b>F3: Context poisoning.</b> Device-side asserts causing subsequent GPU operations to fail until restart.</li>
+        <li><b>F4: Text validity failures.</b> Empty generation, instruction echo, malformed structured output.</li>
+      </ul>
+      <p>Mitigations include preflight auth checks, explicit accelerator flags, session restart instructions, controlled retries, and sanitization with signal-preserving fallback. This policy stack improved practical completion rates and reduced demo interruptions.</p>
+
+      <h2>11. Comparative Context</h2>
+      <p>Direct metric superiority claims across retinal literature are limited by heterogeneous datasets, labels, and endpoints. We therefore provide a contextual comparison emphasizing system scope, transparency, and deployment realism.</p>
+
+      <div class="figure">
+        <img src="figures/fig_performance_context.svg" alt="Performance context"/>
+        <div class="caption"><b>Figure 5.</b> Contextual positioning of Veredictos Vision among representative retinal AI system families by scope and operational profile.</div>
+      </div>
+
+      <table>
+        <thead><tr><th>System type</th><th>Typical scope</th><th>Interpretability</th><th>Reproducibility in free-tier setup</th></tr></thead>
+        <tbody>
+          <tr><td>Single-task DR systems</td><td>Binary or multiclass DR</td><td>Moderate</td><td>Variable</td></tr>
+          <tr><td>Glaucoma segmentation systems</td><td>Disc/cup structural metrics</td><td>High</td><td>Moderate</td></tr>
+          <tr><td>Vessel-only systems</td><td>Mask-level vascular analysis</td><td>High</td><td>Moderate</td></tr>
+          <tr><td><b>Veredictos Vision</b></td><td><b>DR + glaucoma + vessel + report</b></td><td><b>High (explicit tuple + logs)</b></td><td><b>High (artifact contract)</b></td></tr>
+        </tbody>
+      </table>
+      <p>This contextual framing is intentionally conservative. We avoid direct claims of universal superiority because endpoint definitions differ across studies. Instead, we highlight where this work is strong: integrated scope, explicit signal transparency, and practical reproducibility under constrained compute. In translational settings, these properties can be decisive for adoption even when isolated benchmark gains are modest.</p>
+      <p>The comparative takeaway is that Veredictos Vision should be interpreted as a high-integration systems contribution with strong branch quality, rather than a single-task leaderboard submission. This distinction clarifies scientific novelty and makes the manuscript more defensible under heterogeneous benchmark conditions.</p>
+      <p>The ablation evidence supports a clear systems conclusion: completeness of branch signals is necessary for coherent triage language. Removing branches did not only reduce informational richness; it also increased contradiction risk between risk labels and recommendation intensity. This indicates that fusion quality is not a cosmetic feature but a structural component of reliability.</p>
+      <p>Language-policy ablation similarly showed that strict formatting constraints can paradoxically degrade real usability by raising invalid-output frequency. A controlled loose policy with sanitization achieved the best operational frontier: higher completion with preserved signal grounding. This is a practical result for teams integrating medical LLMs under runtime noise.</p>
+
+      <h2>12. Reproducibility Contract</h2>
+      <p>The project exports deterministic artifacts, including best checkpoints, confusion matrix figures, per-class tables, generated reports, metadata JSON files, and final manuscript outputs. Each artifact path is fixed and used by downstream packaging scripts.</p>
+      <p class="mono">/outputs/efficientnet/efficientnet_dr_best.pth</p>
+      <p class="mono">/outputs/transunet_glaucoma_best.pth</p>
+      <p class="mono">/outputs/unetpp/unet_r34_drive_best.pth</p>
+      <p class="mono">/outputs/final_submission/clinical_report_case*.txt</p>
+      <p class="mono">/outputs/final_submission/clinical_report_case*_meta.json</p>
+      <p class="mono">/outputs/final_submission/FINAL_REPORT.md</p>
+
+      <h2>13. Limitations</h2>
+      <p>First, this study is challenge-focused and retrospective; prospective clinical validation remains future work. Second, external-domain shift analysis across camera vendors and acquisition protocols is limited. Third, confidence calibration by class is not yet fully charted in this manuscript. Fourth, report quality has not yet been evaluated in blinded clinician studies.</p>
+      <p>These limitations do not reduce the systems contribution but define the next scientific phase: from robust prototype to translational evidence.</p>
+
+      <h2>14. Practical Recommendations</h2>
+      <p>For teams building medical-AI demos under constrained budgets, we recommend prioritizing: (a) deterministic artifact structure, (b) branch-level explicit outputs, (c) strict startup diagnostics, and (d) robust language-model safety policies. In our experiments, these controls delivered larger practical gains than marginal architecture changes once baseline performance was strong.</p>
+      <p>We also recommend documenting failure taxonomies as part of the scientific report. This improves reproducibility, reduces hidden engineering debt, and enables clearer peer review.</p>
+      <p>Methodologically, the project reinforces that “what to optimize” must include operational validity criteria. A system that reaches high metrics but fails unpredictably at inference has low clinical utility. Future retinal-AI publications should therefore report runtime stability, failure rates, and recovery behavior alongside standard accuracy metrics.</p>
+      <p>For teams preparing challenge or translational submissions, we recommend integrating these controls early in development rather than at packaging time. Early instrumentation shortens iteration loops, exposes hidden assumptions, and materially improves final evidence quality.</p>
+
+      <h2>15. Conclusion</h2>
+      <p>Veredictos Vision demonstrates that multi-pathology retinal screening with clinical report synthesis can be implemented reliably under free-tier compute when architecture and orchestration are co-designed. Strong branch outcomes (QWK 0.979, cup Dice 0.868, vessel 0.717), executed ablations, and explicit runtime safeguards form a coherent evidence package. The central result is not only numerical performance but system behavior under realistic deployment friction.</p>
+
+      <h2>Data Availability</h2>
+      <p>Datasets used are publicly available retinal benchmarks accessed according to their respective licenses and platform terms.</p>
+
+      <h2>Code Availability</h2>
+      <p>All scripts for training, evaluation, integration, report generation, and packaging are included in the sprint notebook/script stack and synchronized repository folders.</p>
+
+      <h2>Acknowledgements</h2>
+      <p>We acknowledge open datasets, open-source libraries, and community infrastructure that enabled full development without paid cloud resources.</p>
+
+      <h2>Competing Interests</h2>
+      <p>The authors declare no competing interests.</p>
+
+      <h2>References</h2>
+      <ol class="refs">
+        <li>Badia AP, Sprechmann P, Vitvitskyi A, et al. Agent57: Outperforming the Atari Human Benchmark. arXiv:2003.13350, 2020. https://arxiv.org/abs/2003.13350</li>
+        <li>Badia AP, Sprechmann P, Vitvitskyi A, et al. Agent57 Outperforms the Atari Human Benchmark. Nature, 588, 604-609, 2020.</li>
+        <li>Gulshan V, Peng L, Coram M, et al. Development and Validation of a Deep Learning Algorithm for Detection of Diabetic Retinopathy in Retinal Fundus Photographs. JAMA, 2016.</li>
+        <li>Ting DSW, Cheung CY-L, Lim G, et al. Development and Validation of a Deep Learning System for Diabetic Retinopathy and Related Eye Diseases. JAMA, 2017.</li>
+        <li>Li Z, Keel S, Liu C, et al. An automated grading system for detection of vision-threatening referable diabetic retinopathy on the basis of color fundus photographs. Diabetes Care, 2018.</li>
+        <li>Orlando JI, Fu H, Barbosa Breda J, et al. REFUGE Challenge: A Unified Framework for Evaluating Automated Methods for Glaucoma Assessment from Fundus Photographs. Medical Image Analysis, 2020.</li>
+        <li>Ran AR, Cheung CY, Wang X, et al. Detection of Glaucoma with Structure-Based Deep Learning Features from Fundus Images. Nature Communications, 2021.</li>
+        <li>Cen LP, Ji J, Lin JW, et al. Automatic Detection of 39 Fundus Diseases and Conditions in Retinal Photographs Using Deep Neural Networks. Nature Communications, 2021.</li>
+        <li>Sun Y, Li C, Li X, et al. Development and Validation of a Deep Learning System for Fundus Disease Screening in Primary Care. npj Digital Medicine, 2023.</li>
+        <li>Abramoff MD, Lavin PT, Birch M, Shah N, Folk JC. Pivotal Trial of an Autonomous AI-Based Diagnostic System for Detection of Diabetic Retinopathy in Primary Care Offices. npj Digital Medicine, 2018.</li>
+        <li>Gargeya R, Leng T. Automated Identification of Diabetic Retinopathy Using Deep Learning. Ophthalmology, 2017.</li>
+        <li>Pratt H, Coenen F, Broadbent DM, Harding SP, Zheng Y. Convolutional Neural Networks for Diabetic Retinopathy. Procedia Computer Science, 2016.</li>
+        <li>Fu H, Cheng J, Xu Y, et al. Disc-Aware Ensemble Network for Glaucoma Screening From Fundus Image. IEEE Transactions on Medical Imaging, 2018.</li>
+        <li>Zhou Z, Siddiquee MMR, Tajbakhsh N, Liang J. UNet++: A Nested U-Net Architecture for Medical Image Segmentation. DLMIA/MICCAI Workshop, 2018.</li>
+        <li>Ronneberger O, Fischer P, Brox T. U-Net: Convolutional Networks for Biomedical Image Segmentation. MICCAI, 2015.</li>
+        <li>Chen J, Lu Y, Yu Q, et al. TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation. arXiv:2102.04306, 2021.</li>
+        <li>Dosovitskiy A, Beyer L, Kolesnikov A, et al. An Image Is Worth 16x16 Words: Transformers for Image Recognition at Scale. ICLR, 2021.</li>
+        <li>K-Dense AI. Claude Scientific Skills repository (templates and guidance), accessed 2026. https://github.com/K-Dense-AI/claude-scientific-skills</li>
+      </ol>
+
+      <p class="small">Note: Cross-paper comparisons are contextual due to heterogeneous datasets and endpoint definitions. Claims are limited to transparent scope and reported metrics.</p>
+    </section>
+
+    
+  </article>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
