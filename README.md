@@ -83,6 +83,13 @@ PROJECT_DESCRIPTION.md
 README.md
 ```
 
+
+## Datasets and citations
+
+See [`DATASETS.md`](DATASETS.md) for:
+- dataset sources and links
+- branch-by-branch usage in this pipeline
+- citation and licensing notes
 ## Model weights
 
 Weights are provided as GitHub Release assets (not tracked directly in git history).
@@ -177,3 +184,4 @@ If this repository is useful, cite it as:
   howpublished={\url{https://github.com/PAMF2/veredictos-vision}}
 }
 ```
+
