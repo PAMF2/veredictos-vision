@@ -1,0 +1,13 @@
+{
+  "glaucoma": {
+    "disc_dice": 0.9551,
+    "cup_dice": 0.8683
+  },
+  "vessel": {
+    "dice": 0.7172
+  },
+  "dr_grading": {
+    "accuracy": 0.9616,
+    "qwk": 0.9793
+  }
+}

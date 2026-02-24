@@ -1,0 +1,17 @@
+﻿[
+    {
+        "file":  "transunet_glaucoma_best.pth",
+        "size_bytes":  390786813,
+        "sha256":  "42a7a8a096d2130a6b4f2d53031a2a91f41cb64b2836cbfb0855279ef05f4c48"
+    },
+    {
+        "file":  "efficientnet_dr_best.pth",
+        "size_bytes":  43372791,
+        "sha256":  "35c871d93508b655ea0cf76210a94aac4e137a28afab581a41efa393cd2919c3"
+    },
+    {
+        "file":  "unet_r34_drive_best.pth",
+        "size_bytes":  97923043,
+        "sha256":  "b65c10c3484087b938d5f7c4696363caa90df61c229ef8408effdf65a58035dd"
+    }
+]
