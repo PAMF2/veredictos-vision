@@ -83,6 +83,83 @@ PROJECT_DESCRIPTION.md
 README.md
 ```
 
+## Notebook guide (what each one does)
+
+- `notebooks/00_setup_verificacao.py`
+  - Environment and dataset sanity checks in Kaggle.
+  - Verifies input mounts, image counts, and expected paths.
+
+- `notebooks/01_transunet_train.py`
+  - Trains glaucoma structural branch (disc/cup segmentation).
+  - Produces `transunet_glaucoma_best.pth`.
+
+- `notebooks/01_transunet_test.py`
+  - Evaluates glaucoma branch on validation/test split.
+  - Exports segmentation metrics and visual checks.
+
+- `notebooks/03_unetpp_train.py`
+  - Trains vessel segmentation branch (UNet/UNet++).
+  - Produces `unet_r34_drive_best.pth` (or configured variant).
+
+- `notebooks/04_unetpp_test.py`
+  - Evaluates vessel model and exports vessel test visualizations/metrics.
+
+- `notebooks/07_efficientnet_train.py`
+  - Trains DR grading branch (5-class ordinal classification).
+  - Uses APTOS + Messidor harmonization and QWK-oriented selection.
+  - Produces `efficientnet_dr_best.pth`.
+
+- `notebooks/08_efficientnet_test.py`
+  - Reconstructs split and evaluates DR checkpoint.
+  - Exports confusion matrix, per-class metrics, and examples.
+
+- `notebooks/09_medgemma_integration.py`
+  - Core MedGemma integration utilities and report generation logic.
+  - Includes constrained generation and safety handling.
+
+- `notebooks/10_distill_medgemma.py` (optional)
+  - Distillation experiments for lightweight language alternatives.
+  - Not required for core final submission path.
+
+- `notebooks/11_freeze_weights.py` (optional)
+  - Helper for packaging/renaming/freeze flows of weight artifacts.
+
+- `notebooks/11_submission_pack.py`
+  - Builds final submission package (reports + summary artifacts).
+  - Produces `outputs/final_submission/*`.
+
+- `notebooks/12_demo_upload_pipeline.py`
+  - End-to-end interactive demo pipeline (3 vision agents + MedGemma report).
+  - Recommended script for challenge video demonstration.
+
+- `notebooks/pack_essential_artifacts.py`
+  - Zips key outputs for export/download from Kaggle.
+
+- `notebooks/pack_download_friendly.py`
+  - Creates smaller zip bundles to avoid large-download failures.
+
+## Execution order (recommended)
+
+Run in this order for full reproducibility:
+
+1. `00_setup_verificacao.py` (environment + dataset checks)
+2. `01_transunet_train.py`
+3. `01_transunet_test.py`
+4. `03_unetpp_train.py`
+5. `04_unetpp_test.py`
+6. `07_efficientnet_train.py`
+7. `08_efficientnet_test.py`
+8. `09_medgemma_integration.py`
+9. `11_submission_pack.py`
+10. `12_demo_upload_pipeline.py` (for live demo recording)
+11. `pack_essential_artifacts.py` or `pack_download_friendly.py` (export artifacts)
+
+Fast path (if weights already trained):
+
+1. `11_submission_pack.py`
+2. `12_demo_upload_pipeline.py`
+3. `pack_essential_artifacts.py`
+
 
 ## Datasets and citations
 
