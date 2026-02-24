@@ -13,6 +13,19 @@ Most retinal AI pipelines optimize one task at a time. Veredictos Vision is desi
 
 The objective is not only high benchmark scores, but reproducibility, traceability, and deployment robustness in low-resource environments.
 
+## Methodological framing
+
+Veredictos Vision is formulated as a constrained multi-objective system:
+
+- maximize branch-specific clinical performance
+- preserve interpretability through explicit intermediate variables
+- enforce signal-text consistency in the language layer
+- maintain execution stability under limited infrastructure
+
+Formally, the pipeline exposes a structured state tuple
+`z = (CDR, glaucoma_risk, DR_grade, DR_confidence, vessel_density)`,
+and report generation is treated as a constrained mapping `r = G(z)`, not an unconstrained free-form diagnosis process.
+
 ## System architecture
 
 Veredictos Vision uses four coordinated agents:
@@ -41,6 +54,14 @@ Veredictos Vision uses four coordinated agents:
 - **DR grading**: Accuracy **0.9616**, QWK **0.9793**
 - **Glaucoma branch**: Disc Dice **0.9551**, Cup Dice **0.8683**
 - **Vessel branch**: Dice/score **0.7172**
+
+## Experimental protocol (summary)
+
+- Branches were trained independently with endpoint-aligned objectives.
+- DR model selection prioritized **QWK** (ordinal consistency), not only flat accuracy.
+- Data leakage checks were enforced before final metric reporting.
+- Inference outputs were exported via deterministic artifact paths for reproducibility.
+- MedGemma outputs were gated by consistency/sanitation checks to reduce instruction echo and numeric drift.
 
 ## Repository layout
 
@@ -119,6 +140,12 @@ python /kaggle/working/sprintfinal/notebooks/pack_essential_artifacts.py
 - **Signal-first reporting**: language grounded in authoritative numeric outputs
 - **Reproducibility-first**: deterministic output paths and checkpoint contracts
 - **Operational resilience**: robust handling of runtime and generation failures
+
+## Scientific scope and limitations
+
+This repository reports challenge-grade, retrospective evaluation and engineering reproducibility.  
+It does **not** claim prospective clinical validation or replacement of specialist judgment.  
+Cross-site domain-shift analysis, uncertainty calibration, and clinician-rated report utility remain active extension directions.
 
 ## Troubleshooting
 
