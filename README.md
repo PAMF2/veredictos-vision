@@ -66,99 +66,102 @@ Veredictos Vision uses four coordinated agents:
 ## Repository layout
 
 ```text
-notebooks/
-  01_*                # glaucoma training/eval scripts
-  03_* / 04_*         # vessel training/eval scripts
-  07_* / 08_*         # DR training/eval scripts
-  09_medgemma_integration.py
-  11_submission_pack.py
-  12_demo_upload_pipeline.py
-  pack_essential_artifacts.py
-
-artifacts/            # metrics and key figures
-weights/              # README + manifest (hashes/sizes)
-utils/
-  medgemma_report.py
-PROJECT_DESCRIPTION.md
+notebooks/                     # all runnable pipeline scripts
+artifacts/                     # metrics, plots, and evaluation outputs
+weights/                       # weight manifest + local weight placeholders
+utils/                         # shared report/prompt utilities
+DATASETS.md                    # dataset sources and usage
+PROJECT_DESCRIPTION.md         # extended project write-up
 README.md
 ```
 
-## Notebook guide (what each one does)
+## Notebook execution map (with datasets and purpose)
 
-- `notebooks/00_setup_verificacao.py`
-  - Environment and dataset sanity checks in Kaggle.
-  - Verifies input mounts, image counts, and expected paths.
+### Stage A - Environment and data checks
 
-- `notebooks/01_transunet_train.py`
-  - Trains glaucoma structural branch (disc/cup segmentation).
-  - Produces `transunet_glaucoma_best.pth`.
+1. `notebooks/00_setup_verificacao.py`
+- Purpose: validate Kaggle environment, mounted datasets, and expected folder structure.
+- Datasets checked: SMDG, APTOS, Messidor-2, DRIVE/STARE mirrors.
+- Run when: first notebook in any fresh Kaggle session.
 
-- `notebooks/01_transunet_test.py`
-  - Evaluates glaucoma branch on validation/test split.
-  - Exports segmentation metrics and visual checks.
+### Stage B - Glaucoma branch (disc/cup -> CDR)
 
-- `notebooks/03_unetpp_train.py`
-  - Trains vessel segmentation branch (UNet/UNet++).
-  - Produces `unet_r34_drive_best.pth` (or configured variant).
+2. `notebooks/01_transunet_train.py`
+- Purpose: train disc/cup segmentation model.
+- Primary dataset: SMDG multichannel glaucoma benchmark mirror.
+- Output: `outputs/transunet_glaucoma_best.pth`.
 
-- `notebooks/04_unetpp_test.py`
-  - Evaluates vessel model and exports vessel test visualizations/metrics.
+3. `notebooks/01_transunet_test.py`
+- Purpose: evaluate glaucoma checkpoint and export structural metrics.
+- Uses: trained checkpoint + held-out split from Stage B.
 
-- `notebooks/07_efficientnet_train.py`
-  - Trains DR grading branch (5-class ordinal classification).
-  - Uses APTOS + Messidor harmonization and QWK-oriented selection.
-  - Produces `efficientnet_dr_best.pth`.
+### Stage C - Vessel branch (segmentation -> vessel density)
 
-- `notebooks/08_efficientnet_test.py`
-  - Reconstructs split and evaluates DR checkpoint.
-  - Exports confusion matrix, per-class metrics, and examples.
+4. `notebooks/03_unetpp_train.py`
+- Purpose: train vessel segmentation model (UNet/UNet++).
+- Primary dataset: DRIVE; fallback support for STARE/DRIVE pixelwise mirrors.
+- Output: `outputs/unetpp/unet_r34_drive_best.pth`.
 
-- `notebooks/09_medgemma_integration.py`
-  - Core MedGemma integration utilities and report generation logic.
-  - Includes constrained generation and safety handling.
+5. `notebooks/04_unetpp_test.py`
+- Purpose: evaluate vessel checkpoint and export visual/quantitative outputs.
+- Uses: checkpoint from Stage C.
 
-- `notebooks/10_distill_medgemma.py` (optional)
-  - Distillation experiments for lightweight language alternatives.
-  - Not required for core final submission path.
+### Stage D - DR branch (5-grade classification)
 
-- `notebooks/11_freeze_weights.py` (optional)
-  - Helper for packaging/renaming/freeze flows of weight artifacts.
+6. `notebooks/07_efficientnet_train.py`
+- Purpose: train DR classifier (EfficientNet-B3) with ordinal-aware selection.
+- Datasets: APTOS 2019 + Messidor-2 harmonized into a unified DR pool.
+- Output: `outputs/efficientnet/efficientnet_dr_best.pth`.
 
-- `notebooks/11_submission_pack.py`
-  - Builds final submission package (reports + summary artifacts).
-  - Produces `outputs/final_submission/*`.
+7. `notebooks/08_efficientnet_test.py`
+- Purpose: evaluate DR checkpoint (QWK, confusion matrix, per-class metrics).
+- Uses: checkpoint from Stage D and reconstructed split policy.
 
-- `notebooks/12_demo_upload_pipeline.py`
-  - End-to-end interactive demo pipeline (3 vision agents + MedGemma report).
-  - Recommended script for challenge video demonstration.
+### Stage E - Clinical language integration
 
-- `notebooks/pack_essential_artifacts.py`
-  - Zips key outputs for export/download from Kaggle.
+8. `notebooks/09_medgemma_integration.py`
+- Purpose: integrate MedGemma with structured vision outputs.
+- Role: constrained report generation with consistency/sanitation controls.
 
-- `notebooks/pack_download_friendly.py`
-  - Creates smaller zip bundles to avoid large-download failures.
+9. `notebooks/10_distill_medgemma.py` *(optional, not required for final system)*
+- Purpose: distillation experiments for lightweight alternatives.
+- Final project note: **not required in final pipeline**; we validated that direct MedGemma integration was sufficient.
+- Practical note: these experiments were explored mainly under quota pressure and are excluded from the core run path.
 
-## Execution order (recommended)
+### Stage F - Packaging and demo
 
-Run in this order for full reproducibility:
+10. `notebooks/11_submission_pack.py`
+- Purpose: build final submission artifacts (`summary_metrics.json`, case reports, final markdown package).
 
-1. `00_setup_verificacao.py` (environment + dataset checks)
-2. `01_transunet_train.py`
-3. `01_transunet_test.py`
-4. `03_unetpp_train.py`
-5. `04_unetpp_test.py`
-6. `07_efficientnet_train.py`
-7. `08_efficientnet_test.py`
-8. `09_medgemma_integration.py`
-9. `11_submission_pack.py`
-10. `12_demo_upload_pipeline.py` (for live demo recording)
-11. `pack_essential_artifacts.py` or `pack_download_friendly.py` (export artifacts)
+11. `notebooks/12_demo_upload_pipeline.py`
+- Purpose: run end-to-end live demo (3 vision agents + MedGemma report layer).
+- Recommended for challenge video recording.
 
-Fast path (if weights already trained):
+12. `notebooks/pack_essential_artifacts.py` / `notebooks/pack_download_friendly.py`
+- Purpose: export final artifacts/weights for download and release packaging.
 
-1. `11_submission_pack.py`
-2. `12_demo_upload_pipeline.py`
-3. `pack_essential_artifacts.py`
+## Recommended run orders
+
+### Full training + evaluation + submission
+
+1. `00_setup_verificacao.py`  
+2. `01_transunet_train.py`  
+3. `01_transunet_test.py`  
+4. `03_unetpp_train.py`  
+5. `04_unetpp_test.py`  
+6. `07_efficientnet_train.py`  
+7. `08_efficientnet_test.py`  
+8. `09_medgemma_integration.py`  
+9. `11_submission_pack.py`  
+10. `12_demo_upload_pipeline.py`  
+11. `pack_essential_artifacts.py` *(or `pack_download_friendly.py`)*
+
+### Inference/demo-only (weights already available)
+
+1. `09_medgemma_integration.py`  
+2. `11_submission_pack.py`  
+3. `12_demo_upload_pipeline.py`  
+4. `pack_essential_artifacts.py`
 
 
 ## Datasets and citations
