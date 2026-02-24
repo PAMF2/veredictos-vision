@@ -1,59 +1,152 @@
-# Veredictos Vision - Sprint Final
+﻿# Veredictos Vision
 
-Multi-pathology retinal screening pipeline for fundus images:
-- Glaucoma segmentation (disc/cup)
-- Vessel segmentation
-- DR grading
-- Clinical report generation with MedGemma
+A multi-agent retinal screening system that fuses three specialist vision models with MedGemma to produce clinically structured, signal-grounded reports.
 
-## Repository structure
-- `notebooks/01_transunet_train.py`, `notebooks/01_transunet_test.py`: glaucoma model
-- `notebooks/03_unetpp_train.py`, `notebooks/04_unetpp_test.py`: vessel model (DRIVE)
-- `notebooks/07_efficientnet_train.py`, `notebooks/08_efficientnet_test.py`: DR grading model
-- `notebooks/09_medgemma_integration.py`: MedGemma report integration
-- `notebooks/11_submission_pack.py`: final package generation
-- `notebooks/12_demo_upload_pipeline.py`: upload-based live demo UI
-- `utils/medgemma_report.py`: prompt/report utilities
-- `streamlit_app.py`: lightweight app entrypoint
+## Why this project
 
-## Final metrics
-- TransUNet Glaucoma: Disc Dice `0.9551`, Cup Dice `0.8683`
-- U-Net Vessel (DRIVE): Dice `0.7172`
-- EfficientNet DR Grading: Accuracy `0.9616`, QWK `0.9793`
+Most retinal AI pipelines optimize one task at a time. Veredictos Vision is designed as an integrated screening stack:
 
-## Kaggle setup
-1. Set accelerator to GPU (T4 recommended for MedGemma live demo).
-2. Add Hugging Face token in Kaggle Secrets as `HF_TOKEN`.
-3. Place repository under `/kaggle/working/sprintfinal` (or adjust paths accordingly).
+- structural glaucoma signal (CDR)
+- diabetic retinopathy staging (5-grade)
+- retinal vessel biomarker extraction
+- controlled clinical-language synthesis
 
-## Run final package
+The objective is not only high benchmark scores, but reproducibility, traceability, and deployment robustness in low-resource environments.
+
+## System architecture
+
+Veredictos Vision uses four coordinated agents:
+
+1. **Glaucoma Agent (TransUNet-style)**
+- Disc/cup segmentation
+- CDR estimation
+- Structural glaucoma risk category
+
+2. **DR Agent (EfficientNet-B3)**
+- 5-class diabetic retinopathy grading
+- Confidence output
+- Ordinal-aware evaluation (QWK)
+
+3. **Vessel Agent (UNet++)**
+- Retinal vessel segmentation
+- Vessel-density biomarker
+
+4. **Clinical Report Agent (MedGemma)**
+- Consumes structured outputs from agents 1-3
+- Generates clinician-facing narrative
+- Constrained by consistency checks and output sanitation
+
+## Final results
+
+- **DR grading**: Accuracy **0.9616**, QWK **0.9793**
+- **Glaucoma branch**: Disc Dice **0.9551**, Cup Dice **0.8683**
+- **Vessel branch**: Dice/score **0.7172**
+
+## Repository layout
+
+```text
+notebooks/
+  01_*                # glaucoma training/eval scripts
+  03_* / 04_*         # vessel training/eval scripts
+  07_* / 08_*         # DR training/eval scripts
+  09_medgemma_integration.py
+  11_submission_pack.py
+  12_demo_upload_pipeline.py
+  pack_essential_artifacts.py
+
+artifacts/            # metrics and key figures
+weights/              # README + manifest (hashes/sizes)
+utils/
+  medgemma_report.py
+PROJECT_DESCRIPTION.md
+README.md
+```
+
+## Model weights
+
+Weights are provided as GitHub Release assets (not tracked directly in git history).
+
+- Release: **v1.0-weights**
+- URL: `https://github.com/PAMF2/veredictos-vision/releases/tag/v1.0-weights`
+
+Included files:
+- `transunet_glaucoma_best.pth`
+- `efficientnet_dr_best.pth`
+- `unet_r34_drive_best.pth`
+- `weights_manifest.json` (SHA256 + file sizes)
+
+## Quickstart (Kaggle)
+
+### 1) Environment
+- Enable **GPU** (T4 recommended).
+- Add `HF_TOKEN` in Kaggle Secrets (with access to `google/medgemma-4b-it`).
+- Place repository at `/kaggle/working/sprintfinal` (or adjust paths).
+
+### 2) Generate final submission package
+
 ```bash
 python /kaggle/working/sprintfinal/notebooks/11_submission_pack.py
 ```
 
-Outputs:
+Output:
 - `/kaggle/working/outputs/final_submission/summary_metrics.json`
 - `/kaggle/working/outputs/final_submission/clinical_report_case*.txt`
 - `/kaggle/working/outputs/final_submission/clinical_report_case*_meta.json`
 - `/kaggle/working/outputs/final_submission/FINAL_REPORT.md`
 
-## Run upload demo (video recording)
+### 3) Run interactive demo pipeline
+
 ```bash
 python /kaggle/working/sprintfinal/notebooks/12_demo_upload_pipeline.py
 ```
 
 The demo provides:
-- image upload
-- pipeline signal estimation for showcase
-- MedGemma clinical report generation
+- model loading checks
+- deterministic signal extraction (`cdr`, `dr_grade`, `dr_conf`, `vessel_density`)
+- MedGemma report generation with consistency controls
+
+## Artifact packaging
+
+To package key files into a zip on Kaggle:
+
+```bash
+python /kaggle/working/sprintfinal/notebooks/pack_essential_artifacts.py
+```
+
+## Design principles
+
+- **Deterministic fusion**: no hidden late-stage decision layer
+- **Signal-first reporting**: language grounded in authoritative numeric outputs
+- **Reproducibility-first**: deterministic output paths and checkpoint contracts
+- **Operational resilience**: robust handling of runtime and generation failures
 
 ## Troubleshooting
-- `ModuleNotFoundError: No module named 'utils'`:
-  - fixed in `12_demo_upload_pipeline.py` by auto-injecting project root into `sys.path`
-  - ensure you run the script from the repository copy (`/kaggle/working/sprintfinal`)
-- If MedGemma fails to load:
-  - verify `HF_TOKEN` in Secrets
-  - confirm GPU is enabled
 
-## Clinical safety note
-This project is AI-assisted screening support and does not replace clinical diagnosis by an ophthalmologist.
+### `ModuleNotFoundError: utils`
+Use the repository script directly (`/kaggle/working/sprintfinal/...`) so path injection resolves correctly.
+
+### MedGemma access errors
+- verify `HF_TOKEN`
+- verify account access to gated model
+- restart session after token or dependency changes
+
+### CUDA device-side assert
+- restart Kaggle session
+- run only the target notebook first (clean GPU context)
+
+## Clinical safety
+
+This project is intended for **AI-assisted screening support** only and does not replace diagnosis, treatment planning, or specialist medical judgment.
+
+## Citation
+
+If this repository is useful, cite it as:
+
+```bibtex
+@misc{veredictosvision2026,
+  title={Veredictos Vision: Multi-Agent Retinal Screening with Controlled Clinical Report Generation},
+  author={Pedro Afonso M.F. and Gabriel Maia},
+  year={2026},
+  howpublished={\url{https://github.com/PAMF2/veredictos-vision}}
+}
+```
